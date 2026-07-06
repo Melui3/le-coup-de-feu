@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #f5f3ee;
+  background: #121212;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: #121212;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background:
+    linear-gradient(180deg, rgba(18, 18, 18, 0.72), #121212 34rem),
+    radial-gradient(circle at 50% -10%, rgba(142, 27, 27, 0.22), transparent 34rem),
+    #121212;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  color: #121212;
+  background: #c9a227;
+}
+
+.section-shell {
+  width: min(1120px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.glass-panel {
+  background: rgba(18, 18, 18, 0.72);
+  border: 1px solid rgba(245, 243, 238, 0.13);
+  backdrop-filter: blur(18px);
+}
+
+.gold-line {
+  background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.92), transparent);
+}
+
+.map-grid {
+  background:
+    linear-gradient(90deg, rgba(245, 243, 238, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(245, 243, 238, 0.08) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(142, 27, 27, 0.5), rgba(18, 18, 18, 0.92));
+  background-size: 42px 42px, 42px 42px, 100% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
