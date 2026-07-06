@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Armchair,
   CalendarDays,
@@ -210,7 +210,41 @@ const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
   .toISOString()
   .slice(0, 10)
 
+function useServiceReveals() {
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll('[data-reveal]'))
+
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'))
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        })
+      },
+      {
+        rootMargin: '0px 0px -10% 0px',
+        threshold: 0.14,
+      },
+    )
+
+    elements.forEach((element, index) => {
+      element.style.setProperty('--reveal-delay', `${Math.min(index % 7, 6) * 70}ms`)
+      observer.observe(element)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+}
+
 function App() {
+  useServiceReveals()
+
   const [activeFilter, setActiveFilter] = useState('all')
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [reservation, setReservation] = useState({
@@ -255,7 +289,7 @@ function App() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-cream/10 bg-charcoal/82 backdrop-blur-xl">
         <nav className="section-shell flex min-h-16 flex-wrap items-center gap-3 py-3">
           <a href="#accueil" className="flex items-center gap-3 text-sm font-semibold">
-            <span className="grid h-10 w-10 place-items-center rounded-md border border-gold/60 bg-gold/10 text-gold">
+            <span className="service-mark grid h-10 w-10 place-items-center rounded-md border border-gold/60 bg-gold/10 text-gold">
               <Flame className="h-5 w-5" aria-hidden="true" />
             </span>
             <span className="font-display text-xl">Le Coup de Feu</span>
@@ -275,7 +309,7 @@ function App() {
               <a
                 key={item}
                 href={`#${item.toLowerCase().replace('é', 'e')}`}
-                className="rounded-md px-3 py-2 transition hover:bg-cream/8 hover:text-cream focus:outline-none focus:ring-2 focus:ring-gold/70"
+                className="nav-link rounded-md px-3 py-2 transition hover:bg-cream/8 hover:text-cream focus:outline-none focus:ring-2 focus:ring-gold/70"
               >
                 {item}
               </a>
@@ -305,6 +339,7 @@ function App() {
             alt="Cuisine ouverte sombre avec flammes, cuivre et chef de dos"
             className="absolute inset-0 -z-20 h-full w-full object-cover motion-safe:animate-slow-pan"
           />
+          <div className="hero-sheen absolute inset-0 -z-10" aria-hidden="true" />
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-charcoal via-charcoal/76 to-charcoal/26" />
           <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-charcoal to-transparent" />
 
@@ -344,7 +379,7 @@ function App() {
               </div>
             </div>
 
-            <div className="glass-panel hidden animate-fade-up rounded-lg p-5 shadow-glow [animation-delay:160ms] md:block">
+            <div className="glass-panel dining-card hidden animate-fade-up rounded-lg p-5 shadow-glow [animation-delay:160ms] md:block">
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm uppercase text-cream/58">Compteur officiel</p>
                 <Flame className="h-5 w-5 animate-ember text-flare" aria-hidden="true" />
@@ -367,7 +402,7 @@ function App() {
 
         <section id="menu" className="border-y border-cream/10 bg-black/18 py-20">
           <div className="section-shell">
-            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div data-reveal className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="mb-3 flex items-center gap-2 text-sm text-gold">
                   <Utensils className="h-4 w-4" aria-hidden="true" />
@@ -381,7 +416,7 @@ function App() {
                     key={id}
                     type="button"
                     onClick={() => setActiveFilter(id)}
-                    className={`inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-gold/70 ${
+                    className={`service-filter inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-gold/70 ${
                       activeFilter === id
                         ? 'border-gold bg-gold text-charcoal'
                         : 'border-cream/14 bg-cream/5 text-cream/78 hover:border-gold/60 hover:text-gold'
@@ -398,7 +433,8 @@ function App() {
               {filteredMenu.map((item) => (
                 <article
                   key={item.name}
-                  className="rounded-lg border border-cream/10 bg-cream/[0.035] p-5 transition hover:-translate-y-1 hover:border-gold/42 hover:bg-cream/[0.055]"
+                  data-reveal
+                  className="menu-card rounded-lg border border-cream/10 bg-cream/[0.035] p-5 transition hover:-translate-y-1 hover:border-gold/42 hover:bg-cream/[0.055]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -419,7 +455,7 @@ function App() {
 
         <section id="reserver" className="py-20">
           <div className="section-shell grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-            <div>
+            <div data-reveal>
               <p className="mb-3 flex items-center gap-2 text-sm text-gold">
                 <CalendarDays className="h-4 w-4" aria-hidden="true" />
                 Réservation avec calendrier
@@ -432,15 +468,15 @@ function App() {
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 {Object.entries(statusCopy).map(([key, status]) => (
-                  <div key={key} className={`rounded-lg border ${status.ring} bg-cream/[0.035] p-4`}>
-                    <span className={`mb-3 block h-3 w-3 rounded-full ${status.dot}`} />
+                  <div key={key} className={`dining-card rounded-lg border ${status.ring} bg-cream/[0.035] p-4`}>
+                    <span className={`table-lamp mb-3 block h-3 w-3 rounded-full ${status.dot}`} />
                     <p className={`text-sm font-semibold ${status.text}`}>{status.label}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <form onSubmit={submitReservation} className="glass-panel rounded-lg p-5 shadow-glow sm:p-6">
+            <form data-reveal onSubmit={submitReservation} className="glass-panel dining-card rounded-lg p-5 shadow-glow sm:p-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-2 flex items-center gap-2 text-sm text-cream/72">
@@ -514,7 +550,7 @@ function App() {
                         type="button"
                         disabled={table.status === 'closed'}
                         onClick={() => updateReservation('tableId', table.id)}
-                        className={`min-h-36 rounded-lg border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-gold/70 disabled:cursor-not-allowed disabled:opacity-58 ${
+                        className={`table-card min-h-36 rounded-lg border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-gold/70 disabled:cursor-not-allowed disabled:opacity-58 ${
                           selected
                             ? 'border-gold bg-gold/12 shadow-gold'
                             : 'border-cream/12 bg-cream/[0.035] hover:border-gold/52'
@@ -525,7 +561,7 @@ function App() {
                             <span className="block text-xs uppercase text-gold">{table.zone}</span>
                             <span className="mt-1 block text-lg font-semibold text-cream">{table.label}</span>
                           </span>
-                          <span className={`h-3 w-3 rounded-full ${status.dot}`} />
+                          <span className={`table-lamp h-3 w-3 rounded-full ${status.dot}`} />
                         </span>
                         <span className={`mt-3 block text-sm font-semibold ${status.text}`}>{status.label}</span>
                         <span className="mt-2 block text-sm leading-6 text-cream/62">{table.seats} pers. · {table.note}</span>
@@ -545,7 +581,7 @@ function App() {
               </button>
 
               {confirmation && (
-                <div className="mt-5 rounded-lg border border-emerald-400/45 bg-emerald-400/10 p-4 text-emerald-50">
+                <div className="reservation-confirmation mt-5 rounded-lg border border-emerald-400/45 bg-emerald-400/10 p-4 text-emerald-50">
                   <p className="font-semibold">✅ Votre réservation est confirmée.</p>
                   <p className="mt-2 text-sm leading-6">
                     {confirmation.name}, {confirmation.guests} couvert(s), {confirmation.table.zone} le {confirmation.date} à{' '}
@@ -568,7 +604,7 @@ function App() {
 
         <section id="avis" className="border-y border-cream/10 bg-cream/[0.035] py-20">
           <div className="section-shell">
-            <div className="max-w-2xl">
+            <div data-reveal className="max-w-2xl">
               <p className="mb-3 flex items-center gap-2 text-sm text-gold">
                 <Star className="h-4 w-4" aria-hidden="true" />
                 Avis clients catastrophiques
@@ -577,7 +613,7 @@ function App() {
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               {reviews.map((review) => (
-                <article key={review.name} className="rounded-lg border border-cream/10 bg-charcoal/72 p-5">
+                <article key={review.name} data-reveal className="review-card rounded-lg border border-cream/10 bg-charcoal/72 p-5">
                   <div className="flex gap-1 text-gold" aria-label={`${review.rating} étoiles sur 5`}>
                     {Array.from({ length: 5 }).map((_, index) => (
                       <Star
@@ -597,7 +633,7 @@ function App() {
 
         <section id="galerie" className="py-20">
           <div className="section-shell">
-            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div data-reveal className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="mb-3 flex items-center gap-2 text-sm text-gold">
                   <Camera className="h-4 w-4" aria-hidden="true" />
@@ -611,7 +647,7 @@ function App() {
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               {gallery.map((item) => (
-                <figure key={item.title} className="group overflow-hidden rounded-lg border border-cream/10 bg-cream/[0.035]">
+                <figure key={item.title} data-reveal className="gallery-card group overflow-hidden rounded-lg border border-cream/10 bg-cream/[0.035]">
                   <img
                     src={assetPath(item.src)}
                     alt={item.title}
@@ -629,7 +665,7 @@ function App() {
 
         <section id="faq" className="border-y border-cream/10 bg-black/18 py-20">
           <div className="section-shell grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-            <div>
+            <div data-reveal>
               <p className="mb-3 flex items-center gap-2 text-sm text-gold">
                 <HelpCircle className="h-4 w-4" aria-hidden="true" />
                 FAQ
@@ -640,7 +676,7 @@ function App() {
               {faqs.map((faq) => {
                 const isOpen = openFaq === faq.question
                 return (
-                  <article key={faq.question} className="rounded-lg border border-cream/10 bg-cream/[0.035]">
+                  <article key={faq.question} data-reveal className="faq-card rounded-lg border border-cream/10 bg-cream/[0.035]">
                     <button
                       type="button"
                       onClick={() => setOpenFaq(isOpen ? '' : faq.question)}
@@ -659,7 +695,7 @@ function App() {
 
         <section id="adresse" className="py-20">
           <div className="section-shell grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
-            <div className="overflow-hidden rounded-lg border border-cream/10 bg-black/28 shadow-glow">
+            <div data-reveal className="map-card overflow-hidden rounded-lg border border-cream/10 bg-black/28 shadow-glow">
               <div className="relative min-h-96">
                 <iframe
                   title="Carte OpenStreetMap de l'adresse fictive du Coup de Feu"
@@ -690,7 +726,7 @@ function App() {
               </div>
             </div>
 
-            <div>
+            <div data-reveal>
               <p className="mb-3 flex items-center gap-2 text-sm text-gold">
                 <MapPin className="h-4 w-4" aria-hidden="true" />
                 Localisation et horaires
@@ -725,11 +761,11 @@ function App() {
       </main>
 
       <footer className="border-t border-cream/10 bg-black/42">
-        <div className="section-shell py-12">
+        <div data-reveal className="section-shell py-12">
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.9fr_0.8fr_1fr]">
             <div>
               <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-md border border-gold/60 bg-gold/10 text-gold">
+                <span className="service-mark grid h-10 w-10 place-items-center rounded-md border border-gold/60 bg-gold/10 text-gold">
                   <Flame className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <span className="font-display text-2xl">Le Coup de Feu</span>
